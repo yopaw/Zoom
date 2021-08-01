@@ -20,8 +20,8 @@ public class ParticipantStartMenuState implements IState {
 	@Override
 	public void printStateMenu(User user) {
 		String raiseHandMenu = "";
-		if(Util.isRaisedHand) raiseHandMenu = "Lower";
-		else raiseHandMenu = "Raise";
+		if(Util.isRaisedHand) raiseHandMenu = "Lower ";
+		else raiseHandMenu = "Raise ";
 		raiseHandMenu += "Hand";
 		System.out.println("1. Invite Other People");
 		System.out.println("2. "+raiseHandMenu);
@@ -38,10 +38,10 @@ public class ParticipantStartMenuState implements IState {
 			changeState(user, input);
 			break;
 		case 2:
+			Util.isRaisedHand = !Util.isRaisedHand;
 			break;
 		case 3:
-			Util.isRaisedHand = !Util.isRaisedHand
-			;
+			
 			break;
 		case 4:
 			changeState(user, input);

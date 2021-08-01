@@ -19,7 +19,7 @@ public class PrivateChatState implements IState {
 
 	@Override
 	public void getInputFromUser(User user, String input) {
-		
+		changeState(user, input);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package nachos.proj1;
 
 import nachos.proj1.models.Meeting;
+import nachos.proj1.models.Record;
 import nachos.proj1.models.User;
 import nachos.proj1.models.states.HostStartMenuState;
 import nachos.proj1.models.states.ParticipantStartMenuState;
@@ -157,18 +158,26 @@ public class MainSystem {
 						Util.destinationPrivateMessageAddress = inputINT;
 					}
 					currentUser.getState().getInputFromUser(currentUser, inputINT);
-			
 				} else {
 					if (userState.equals("PublicChatState")) {
-						String string = "chat" + MyNetworkLink.DELIMITER + inputMenu + MyNetworkLink.DELIMITER
-								+ currentUser.getUsername();
-						myNetworkLink.send(currentMeeting.getHostAddress(), string);
+						if(!inputMenu.equals("exit")) {
+							String string = "chat" + MyNetworkLink.DELIMITER + inputMenu + MyNetworkLink.DELIMITER
+									+ currentUser.getUsername();
+							myNetworkLink.send(currentMeeting.getHostAddress(), string);
+						}
 					}
 					else if(userState.equals("PrivateChatState")) {
-						String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
-								MyNetworkLink.DELIMITER + currentUser.getUsername();
-						myNetworkLink.send(Util.destinationPrivateMessageAddress, privateChatFormat);
+						if(!inputMenu.equals("exit")) {
+							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
+									MyNetworkLink.DELIMITER + currentUser.getUsername();
+							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
+									inputMenu,
+									String.valueOf(MyTimer.time/20000)));
+							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
+									privateChatFormat);
+						}
 					}
+					currentUser.getState().getInputFromUser(currentUser, inputMenu);
 				}
 				if(currentUser.getState().getClass().getSimpleName().equals("ExitMeetingState")) {
 					String leaveMeetingFormat = "leave" + MyNetworkLink.DELIMITER + myNetworkLink.getNetworkAddress()
@@ -222,9 +231,47 @@ public class MainSystem {
 				console.println(meeting.getMeetingLink());
 				myNetworkLink.liveStreaming();
 				inputMenu = console.scan();
+				System.out.println("INPUT MENU "+inputMenu);
+				String userState = currentUser.getState().getClass().getSimpleName();
 				if(Validator.isNumeric(inputMenu)) {
 					int input = Integer.parseInt(inputMenu);
+					System.out.println("MASUK SINI");
+					if (userState.equals("InviteOtherPeopleState")) {
+						if (input > 0) {
+							String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER + Util.currentMeetingID
+									+ MyNetworkLink.DELIMITER + currentUser.getUsername();
+
+							int destinationNetworkAddress = myFileSystem.getOnlineUsersDataNotInMeeting().get(input - 1)
+									.getCurrentNetworkAddress();
+							myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
+						}
+					} else if (userState.equals("PrivateChatMenuState")) {
+						Util.destinationPrivateMessageAddress = input;
+					}
 					currentUser.getState().getInputFromUser(currentUser, input);
+				}
+				else {
+					if (userState.equals("PublicChatState")) {
+						if(!inputMenu.equals("exit")) {
+							MyNetworkLink.publicMessage = inputMenu;
+							myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), 
+									inputMenu, String.valueOf(MyTimer.time/20000)));
+							myNetworkLink.sendRequestToParticipant();
+						}
+					}
+					else if(userState.equals("PrivateChatState")) {
+						if(!inputMenu.equals("exit")) {
+							System.out.println(inputMenu);
+							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
+									MyNetworkLink.DELIMITER + currentUser.getUsername();
+							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
+									inputMenu,
+									String.valueOf(MyTimer.time/20000)));
+							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
+									privateChatFormat);
+						}
+					}
+					currentUser.getState().getInputFromUser(currentUser, inputMenu);
 				}
 			}
 		}

@@ -54,14 +54,14 @@ public class HostStartMenuState implements IState {
 	}
 	
 	private void initialize() {
-		if(Util.isPrivateMessage) privateMessageMenu = "Enable";
-		else privateMessageMenu = "Disable";
+		if(!Util.isPrivateMessage) privateMessageMenu = "Enable ";
+		else privateMessageMenu = "Disable ";
 		privateMessageMenu = "Private Message";
-		if(Util.isRecording) recordMeetingMenu = "Enable";
-		else recordMeetingMenu = "Disable";
+		if(!Util.isRecording) recordMeetingMenu = "Enable ";
+		else recordMeetingMenu = "Disable ";
 		recordMeetingMenu += "Record Meeting";
-		if(Util.isRaisedHand) raiseHandMenu = "Lower";
-		else raiseHandMenu = "Raise";
+		if(Util.isRaisedHand) raiseHandMenu = "Lower ";
+		else raiseHandMenu = "Raise ";
 		raiseHandMenu += "Hand";
 	}
 

@@ -31,6 +31,7 @@ public class MyNetworkLink {
 	private boolean isHost = false;
 	private boolean isParticipant = false;
 	private String recordContent;
+	public static String publicMessage = "";
 	
 	public void initialize() {
 		listParticipant.clear();
@@ -140,6 +141,7 @@ public class MyNetworkLink {
 						records.add(new Record(participantUsername + " (private)",
 								recordContent,
 								currentTime));
+						liveStreaming();
 					}
 				}
 			}
@@ -178,7 +180,21 @@ public class MyNetworkLink {
 		KThread thread = new KThread(new Runnable() {
 			@Override
 			public void run() {
-				if(purpose.equals("join") || purpose.equals("leave")) {
+				String userState = currentUser.getState().getClass().getSimpleName();
+				if(userState.equals("ExitMeetingState")) {
+					for(int i = 0; i < listParticipant.size(); i++) {
+						String string = "leave" + DELIMITER + "" + DELIMITER + currentUser.getUsername();
+						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
+					}
+				}
+				else if(userState.equals("PublicChatState")) {
+					for(int i = 0; i < listParticipant.size(); i++) {
+						String string = "chat" + MyNetworkLink.DELIMITER + publicMessage + MyNetworkLink.DELIMITER
+								+ currentUser.getUsername();
+						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
+					}
+				}
+				else if(purpose.equals("join") || purpose.equals("leave")) {
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "update" + DELIMITER + totalParticipant + 
 								DELIMITER + participantUsername;
@@ -220,6 +236,16 @@ public class MyNetworkLink {
 		}
 	}
 	
+	public Vector<Record> getRecords() {
+		return records;
+	}
+
+
+	public void setRecords(Vector<Record> records) {
+		this.records = records;
+	}
+
+
 	public String receive() {
 		return new String(networkLink.receive().contents);
 	}
