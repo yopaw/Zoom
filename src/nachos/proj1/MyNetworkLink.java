@@ -9,6 +9,7 @@ import nachos.machine.Packet;
 import nachos.proj1.models.Record;
 import nachos.proj1.models.Request;
 import nachos.proj1.models.User;
+import nachos.proj1.models.states.ExitMeetingState;
 import nachos.proj1.utils.Util;
 import nachos.threads.KThread;
 import nachos.threads.Semaphore;
@@ -32,6 +33,7 @@ public class MyNetworkLink {
 	private boolean isParticipant = false;
 	private String recordContent;
 	public static String publicMessage = "";
+	public static boolean isHostRaisedHand = false;
 	
 	public void initialize() {
 		listParticipant.clear();
@@ -86,6 +88,14 @@ public class MyNetworkLink {
 								currentTime));
 						sendRequestToParticipant();
 					}
+					else if(purpose.equals("lower")) {
+						recordContent = participantUsername + 
+								" lowered hand";
+						records.add(new Record(participantUsername, 
+								recordContent,
+								currentTime));
+						sendRequestToParticipant();
+					}
 					else if(purpose.equals("leave")) {
 						recordContent = participantUsername +
 								"leave the meeting";
@@ -127,7 +137,15 @@ public class MyNetworkLink {
 					}
 					else if(purpose.equals("raise")) {
 						recordContent = participantUsername + 
-								"raised hand";
+								" raised hand";
+						records.add(new Record(participantUsername, 
+								recordContent,
+								currentTime));
+						liveStreaming();
+					}
+					else if(purpose.equals("lower")) {
+						recordContent = participantUsername + 
+								" lowered hand";
 						records.add(new Record(participantUsername, 
 								recordContent,
 								currentTime));
@@ -142,6 +160,11 @@ public class MyNetworkLink {
 								recordContent,
 								currentTime));
 						liveStreaming();
+					}
+					else if(purpose.equals("leave")) {
+						currentUser.setState(new ExitMeetingState());
+						System.out.println("\nHost has ended the stream.");
+						System.out.println("Please enter to leave the meeting.");
 					}
 				}
 			}
@@ -194,6 +217,26 @@ public class MyNetworkLink {
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}
+				else if(userState.equals("HostStartMenuState") && isHostRaisedHand) {
+					String string;
+					String sendContent = currentUser.getUsername();
+					if(Util.isRaisedHand) {
+						string = "raise";
+						sendContent += " raised hand";
+					}
+					else {
+						string = "lower";
+						sendContent += " lowered hand";
+					}
+					records.add(new Record(currentUser.getUsername(), sendContent, MyTimer.time/20000));
+					
+					for(int i = 0; i < listParticipant.size(); i++) {
+						String sendFormat = string + DELIMITER + sendContent+ 
+								DELIMITER + currentUser.getUsername();
+						send(listParticipant.get(i).getCurrentNetworkAddress(), sendFormat);
+					}
+					isHostRaisedHand = false;
+				}
 				else if(purpose.equals("join") || purpose.equals("leave")) {
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "update" + DELIMITER + totalParticipant + 
@@ -209,13 +252,20 @@ public class MyNetworkLink {
 					}
 				}
 				else if(purpose.equals("raise")) {
-					System.out.println("MASUK RAISE");
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "raise" + DELIMITER +  
 								recordContent + DELIMITER + participantUsername;
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}
+				else if(purpose.equals("lower")) {
+					for(int i = 0; i < listParticipant.size(); i++) {
+						String string = "lower" + DELIMITER +  
+								recordContent + DELIMITER + participantUsername;
+						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
+					}
+				}
+				purpose = "";
 			}
 		});
 		thread.fork();

@@ -100,7 +100,7 @@ public class MainSystem {
 		Meeting currentMeeting;
 		String meetingPassword;
 		while (true) {
-			if(!isInvited) {
+			if (!isInvited) {
 				do {
 					console.print("Please input Meeting ID or Meeting Links: ");
 					input = console.scan();
@@ -109,94 +109,103 @@ public class MainSystem {
 				if (!input.startsWith("https:")) {
 					console.print("Please input password for the Meeting: ");
 					meetingPassword = console.scan();
-					if(!Validator.isPasswordValid(input, meetingPassword)) return;
+					if (!Validator.isPasswordValid(input, meetingPassword))
+						return;
+					else
+						break;
 				}
+				else break;
+			} else {
+				currentMeeting = currentInvitedMeeting;
+				break;
 			}
-			else currentMeeting = currentInvitedMeeting;
-			MyTimer.time = 0;
-			Util.currentMeetingID = currentMeeting.getMeetingID();
-			Util.currentMeetingLink = "https://www."+Util.currentMeetingID+".com";
-			
-			currentUser.setState(new ParticipantStartMenuState());
-			
-			myNetworkLink.initialize();
-			
-			String joinMeetingFormat = "join" + MyNetworkLink.DELIMITER + 
-					myNetworkLink.getNetworkAddress()+ MyNetworkLink.DELIMITER + 
-					currentUser.getUsername() + MyNetworkLink.DELIMITER +
-					currentMeeting.getMeetingID();
-			
-			String participantMeetingFormat = currentUser.getUsername() +
-					MyFileSystem.DELIMITER + currentUser.getCurrentNetworkAddress();
-			
-			System.out.println(currentMeeting.getMeetingID());
-			myFileSystem.appendFile("participant"+currentMeeting.getMeetingID()+MyFileSystem.FILE_EXTENSION,
-					participantMeetingFormat);
+		}
+		
+		MyTimer.time = 0;
+		Util.currentMeetingID = currentMeeting.getMeetingID();
+		Util.currentMeetingLink = "https://www." + Util.currentMeetingID + ".com";
 
-			myNetworkLink.setCurrentUser(currentUser);
-			myNetworkLink.send(currentMeeting.getHostAddress(), joinMeetingFormat);
-			
-			myNetworkLink.setParticipant(true);
-			
-			while (myNetworkLink.isParticipant()) {
-				myNetworkLink.liveStreaming();
-				String userState = currentUser.getState().getClass().getSimpleName();
-				inputMenu = console.scan();
+		currentUser.setState(new ParticipantStartMenuState());
+
+		myNetworkLink.initialize();
+
+		String joinMeetingFormat = "join" + MyNetworkLink.DELIMITER + myNetworkLink.getNetworkAddress()
+				+ MyNetworkLink.DELIMITER + currentUser.getUsername() + MyNetworkLink.DELIMITER
+				+ currentMeeting.getMeetingID();
+
+		String participantMeetingFormat = currentUser.getUsername() + MyFileSystem.DELIMITER
+				+ currentUser.getCurrentNetworkAddress();
+
+		System.out.println(currentMeeting.getMeetingID());
+		myFileSystem.appendFile("participant" + currentMeeting.getMeetingID() + MyFileSystem.FILE_EXTENSION,
+				participantMeetingFormat);
+
+		myNetworkLink.setCurrentUser(currentUser);
+		myNetworkLink.send(currentMeeting.getHostAddress(), joinMeetingFormat);
+
+		myNetworkLink.setParticipant(true);
+
+		while (true) {
+			myNetworkLink.liveStreaming();
+			String userState = currentUser.getState().getClass().getSimpleName();
+			inputMenu = console.scan();
+			if (Validator.isNumeric(inputMenu)) {
+				int inputINT = Integer.parseInt(inputMenu);
+				if (userState.equals("InviteOtherPeopleState")) {
+					if (inputINT > 0) {
+						String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER + Util.currentMeetingID
+								+ MyNetworkLink.DELIMITER + currentUser.getUsername();
+
+						int destinationNetworkAddress = myFileSystem.getOnlineUsersDataNotInMeeting().get(inputINT - 1)
+								.getCurrentNetworkAddress();
+						myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
+					}
+				} else if (userState.equals("PrivateChatMenuState")) {
+					Util.destinationPrivateMessageAddress = inputINT;
+				} else if (userState.equals("ParticipantStartMenuState")) {
+					if (inputINT == 2) {
+						String raiseHandFormat;
+						if (!Util.isRaisedHand)
+							raiseHandFormat = "raise";
+						else
+							raiseHandFormat = "lower";
+						raiseHandFormat += MyNetworkLink.DELIMITER + "raise" + MyNetworkLink.DELIMITER
+								+ currentUser.getUsername();
+						myNetworkLink.send(currentMeeting.getHostAddress(), raiseHandFormat);
+					}
+				}
+				currentUser.getState().getInputFromUser(currentUser, inputINT);
+			} else {
+				if (userState.equals("PublicChatState")) {
+					if (!inputMenu.equals("exit")) {
+						String string = "chat" + MyNetworkLink.DELIMITER + inputMenu + MyNetworkLink.DELIMITER
+								+ currentUser.getUsername();
+						myNetworkLink.send(currentMeeting.getHostAddress(), string);
+					}
+				} else if (userState.equals("PrivateChatState")) {
+					if (!inputMenu.equals("exit")) {
+						String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu
+								+ MyNetworkLink.DELIMITER + currentUser.getUsername();
+						myNetworkLink.getRecords().add(
+								new Record(currentUser.getUsername() + " (private)", inputMenu, MyTimer.time / 20000));
+						myNetworkLink.send(MyFileSystem.getListParticipantMeeting()
+								.get(Util.destinationPrivateMessageAddress - 1).getCurrentNetworkAddress(),
+								privateChatFormat);
+					}
+				}
+				currentUser.getState().getInputFromUser(currentUser, inputMenu);
+			}
+			if (currentUser.getState().getClass().getSimpleName().equals("ExitMeetingState")) {
 				if (Validator.isNumeric(inputMenu)) {
 					int inputINT = Integer.parseInt(inputMenu);
-					if(userState.equals("InviteOtherPeopleState")) {
-						if(inputINT > 0) {
-							String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER +
-									Util.currentMeetingID + MyNetworkLink.DELIMITER + 
-									currentUser.getUsername();
-							
-							int destinationNetworkAddress = myFileSystem.getOnlineUsersDataNotInMeeting().get(inputINT-1).getCurrentNetworkAddress();
-							myNetworkLink.send(destinationNetworkAddress
-									,inviteParticipantFormat);
-						}
+					if (inputINT == 5) {
+						String leaveMeetingFormat = "leave" + MyNetworkLink.DELIMITER
+								+ myNetworkLink.getNetworkAddress() + MyNetworkLink.DELIMITER
+								+ currentUser.getUsername();
+						myNetworkLink.send(currentMeeting.getHostAddress(), leaveMeetingFormat);
 					}
-					else if(userState.equals("PrivateChatMenuState")) {
-						Util.destinationPrivateMessageAddress = inputINT;
-					}
-					else if(userState.equals("ParticipantStartMenuState")){
-						if(inputINT == 2) {
-							String raiseHandFormat;
-							if(!Util.isRaisedHand) raiseHandFormat = "raise";
-							else raiseHandFormat = "lower";
-							raiseHandFormat += MyNetworkLink.DELIMITER +
-									"raise" + MyNetworkLink.DELIMITER +
-									currentUser.getUsername();
-							myNetworkLink.send(currentMeeting.getHostAddress(), raiseHandFormat);
-						}
-					}
-					currentUser.getState().getInputFromUser(currentUser, inputINT);
-				} else {
-					if (userState.equals("PublicChatState")) {
-						if(!inputMenu.equals("exit")) {
-							String string = "chat" + MyNetworkLink.DELIMITER + inputMenu + MyNetworkLink.DELIMITER
-									+ currentUser.getUsername();
-							myNetworkLink.send(currentMeeting.getHostAddress(), string);
-						}
-					}
-					else if(userState.equals("PrivateChatState")) {
-						if(!inputMenu.equals("exit")) {
-							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
-									MyNetworkLink.DELIMITER + currentUser.getUsername();
-							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
-									inputMenu,
-									MyTimer.time/20000));
-							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
-									privateChatFormat);
-						}
-					}
-					currentUser.getState().getInputFromUser(currentUser, inputMenu);
 				}
-				if(currentUser.getState().getClass().getSimpleName().equals("ExitMeetingState")) {
-					String leaveMeetingFormat = "leave" + MyNetworkLink.DELIMITER + myNetworkLink.getNetworkAddress()
-					+ MyNetworkLink.DELIMITER + currentUser.getUsername();
-					myNetworkLink.send(currentMeeting.getHostAddress(), leaveMeetingFormat);
-					break;
-				}
+				break;
 			}
 		}
 	}
@@ -247,46 +256,58 @@ public class MainSystem {
 				myNetworkLink.liveStreaming();
 				inputMenu = console.scan();
 				String userState = currentUser.getState().getClass().getSimpleName();
-				if(Validator.isNumeric(inputMenu)) {
-					int input = Integer.parseInt(inputMenu);
-					if (userState.equals("InviteOtherPeopleState")) {
-						if (input > 0) {
-							String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER + Util.currentMeetingID
-									+ MyNetworkLink.DELIMITER + currentUser.getUsername();
+				if(!userState.equals("ExitMeetingState")) {
+					if(Validator.isNumeric(inputMenu)) {
+						int input = Integer.parseInt(inputMenu);
+						if (userState.equals("InviteOtherPeopleState")) {
+							if (input > 0) {
+								String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER + Util.currentMeetingID
+										+ MyNetworkLink.DELIMITER + currentUser.getUsername();
 
-							int destinationNetworkAddress = myFileSystem.getOnlineUsersDataNotInMeeting().get(input - 1)
-									.getCurrentNetworkAddress();
-							myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
-						}
-					} else if (userState.equals("PrivateChatMenuState")) {
-						Util.destinationPrivateMessageAddress = input;
-					}
-					currentUser.getState().getInputFromUser(currentUser, input);
-				}
-				else {
-					if (userState.equals("PublicChatState")) {
-						if(!inputMenu.equals("exit")) {
-							MyNetworkLink.publicMessage = inputMenu;
-							myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), 
-									inputMenu, MyTimer.time/20000));
-							myNetworkLink.sendRequestToParticipant();
-						}
-					}
-					else if(userState.equals("PrivateChatState")) {
-						if(!inputMenu.equals("exit")) {
-							if(Util.destinationPrivateMessageAddress-1 == currentUser.getCurrentNetworkAddress()) {
-								System.out.println("You cant message yourself!");	
+								int destinationNetworkAddress = myFileSystem.getOnlineUsersDataNotInMeeting().get(input - 1)
+										.getCurrentNetworkAddress();
+								myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
 							}
-							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
-									MyNetworkLink.DELIMITER + currentUser.getUsername();
-							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
-									inputMenu,
-									MyTimer.time/20000));
-							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
-									privateChatFormat);
+						} else if (userState.equals("PrivateChatMenuState")) {
+							Util.destinationPrivateMessageAddress = input;
 						}
+						else if (userState.equals("HostStartMenuState")) {
+							if (input == 4) {
+								MyNetworkLink.isHostRaisedHand = true;
+								myNetworkLink.sendRequestToParticipant();
+							}
+						}
+						currentUser.getState().getInputFromUser(currentUser, input);
 					}
-					currentUser.getState().getInputFromUser(currentUser, inputMenu);
+					else {
+						if (userState.equals("PublicChatState")) {
+							if(!inputMenu.equals("exit")) {
+								MyNetworkLink.publicMessage = inputMenu;
+								myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), 
+										inputMenu, MyTimer.time/20000));
+								myNetworkLink.sendRequestToParticipant();
+							}
+						}
+						else if(userState.equals("PrivateChatState")) {
+							if(!inputMenu.equals("exit")) {
+								if(Util.destinationPrivateMessageAddress-1 == currentUser.getCurrentNetworkAddress()) {
+									System.out.println("You cant message yourself!");	
+								}
+								String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
+										MyNetworkLink.DELIMITER + currentUser.getUsername();
+								myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
+										inputMenu,
+										MyTimer.time/20000));
+								myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
+										privateChatFormat);
+							}
+						}
+						currentUser.getState().getInputFromUser(currentUser, inputMenu);
+					}
+				}
+				if(currentUser.getState().getClass().getSimpleName().equals("ExitMeetingState")) {
+					myNetworkLink.sendRequestToParticipant();
+					break;
 				}
 			}
 		}
