@@ -52,7 +52,7 @@ public class MyNetworkLink {
 			@Override
 			public void run() {
 				String []contents = receive().split(DELIMITER+"");
-				String currentTime = String.valueOf(MyTimer.time/20000);
+				int currentTime = MyTimer.time/20000;
 				purpose = contents[0];
 				participantMessage = contents[1];
 				participantUsername = contents[2];
@@ -80,7 +80,7 @@ public class MyNetworkLink {
 					}
 					else if(purpose.equals("raise")) {
 						recordContent = participantUsername + 
-								"raised his / her hand";
+								" raised hand";
 						records.add(new Record(participantUsername, 
 								recordContent,
 								currentTime));
@@ -127,7 +127,7 @@ public class MyNetworkLink {
 					}
 					else if(purpose.equals("raise")) {
 						recordContent = participantUsername + 
-								"raised his / her hand";
+								"raised hand";
 						records.add(new Record(participantUsername, 
 								recordContent,
 								currentTime));
@@ -209,6 +209,7 @@ public class MyNetworkLink {
 					}
 				}
 				else if(purpose.equals("raise")) {
+					System.out.println("MASUK RAISE");
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "raise" + DELIMITER +  
 								recordContent + DELIMITER + participantUsername;

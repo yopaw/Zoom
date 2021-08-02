@@ -16,6 +16,7 @@ public class MainSystem {
 	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
 	private boolean isInvited = false;
 	private Meeting currentInvitedMeeting = new Meeting();
+	private MyTimer myTimer = MyTimer.getInstance();
 	
 	public MainSystem() {
 		authMenu();
@@ -43,6 +44,7 @@ public class MainSystem {
 	
 	private void initialize() {
 		myFileSystem.loadOnlineUsersData();
+		Util.currentUsername = currentUser.getUsername();
 		String onlineUserFormat = currentUser.getUsername() + MyFileSystem.DELIMITER +
 				currentUser.getCurrentNetworkAddress();
 		if(Validator.isNotContainsByName(myFileSystem.getOnlineUsersData(), currentUser.getUsername())) {
@@ -111,8 +113,14 @@ public class MainSystem {
 				}
 			}
 			else currentMeeting = currentInvitedMeeting;
+			MyTimer.time = 0;
+			Util.currentMeetingID = currentMeeting.getMeetingID();
+			Util.currentMeetingLink = "https://www."+Util.currentMeetingID+".com";
+			
 			currentUser.setState(new ParticipantStartMenuState());
+			
 			myNetworkLink.initialize();
+			
 			String joinMeetingFormat = "join" + MyNetworkLink.DELIMITER + 
 					myNetworkLink.getNetworkAddress()+ MyNetworkLink.DELIMITER + 
 					currentUser.getUsername() + MyNetworkLink.DELIMITER +
@@ -128,12 +136,10 @@ public class MainSystem {
 			myNetworkLink.setCurrentUser(currentUser);
 			myNetworkLink.send(currentMeeting.getHostAddress(), joinMeetingFormat);
 			
-			Util.currentMeetingID = currentMeeting.getMeetingID();
-			Util.currentMeetingLink = "https://www."+Util.currentMeetingID+".com";
 			myNetworkLink.setParticipant(true);
+			
 			while (myNetworkLink.isParticipant()) {
 				myNetworkLink.liveStreaming();
-				System.out.println("START");
 				String userState = currentUser.getState().getClass().getSimpleName();
 				inputMenu = console.scan();
 				if (Validator.isNumeric(inputMenu)) {
@@ -149,13 +155,19 @@ public class MainSystem {
 									,inviteParticipantFormat);
 						}
 					}
-					else if(userState.equals("ParticipantStartMenuState")) {
-						if(inputINT == 3) {
-							currentMeeting = Validator.isValidMeetingIdentifier(currentMeeting.getMeetingID());
-						}
-					}
 					else if(userState.equals("PrivateChatMenuState")) {
 						Util.destinationPrivateMessageAddress = inputINT;
+					}
+					else if(userState.equals("ParticipantStartMenuState")){
+						if(inputINT == 2) {
+							String raiseHandFormat;
+							if(!Util.isRaisedHand) raiseHandFormat = "raise";
+							else raiseHandFormat = "lower";
+							raiseHandFormat += MyNetworkLink.DELIMITER +
+									"raise" + MyNetworkLink.DELIMITER +
+									currentUser.getUsername();
+							myNetworkLink.send(currentMeeting.getHostAddress(), raiseHandFormat);
+						}
 					}
 					currentUser.getState().getInputFromUser(currentUser, inputINT);
 				} else {
@@ -172,7 +184,7 @@ public class MainSystem {
 									MyNetworkLink.DELIMITER + currentUser.getUsername();
 							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
 									inputMenu,
-									String.valueOf(MyTimer.time/20000)));
+									MyTimer.time/20000));
 							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
 									privateChatFormat);
 						}
@@ -199,6 +211,9 @@ public class MainSystem {
 			console.print("Please input Meeting Password: ");
 			meetingPassword = console.scan();
 			
+			MyTimer.time = 0;
+			myNetworkLink.initialize();
+			
 			Meeting meeting = 
 					new Meeting(meetingPassword, currentUser.getUsername(), 
 							privateMeeting, myNetworkLink.getNetworkAddress());
@@ -214,6 +229,9 @@ public class MainSystem {
 			myFileSystem.writeFile(meeting.getMeetingID() + MyFileSystem.FILE_EXTENSION, 
 					saveMeetingFormat);
 			
+			
+			Util.currentMeetingID = meeting.getMeetingID();
+			Util.currentMeetingLink = "https://www."+Util.currentMeetingID+".com";
 			currentUser.setState(new HostStartMenuState());
 			myNetworkLink.setCurrentUser(currentUser);
 			myNetworkLink.setHost(true);
@@ -224,18 +242,13 @@ public class MainSystem {
 			myFileSystem.appendFile("participant"+meeting.getMeetingID()+MyFileSystem.FILE_EXTENSION,
 					participantMeetingFormat);
 			
-			Util.currentMeetingID = meeting.getMeetingID();
-			Util.currentMeetingLink = "https://www."+Util.currentMeetingID+".com";
-			
 			while (true) {
 				console.println(meeting.getMeetingLink());
 				myNetworkLink.liveStreaming();
 				inputMenu = console.scan();
-				System.out.println("INPUT MENU "+inputMenu);
 				String userState = currentUser.getState().getClass().getSimpleName();
 				if(Validator.isNumeric(inputMenu)) {
 					int input = Integer.parseInt(inputMenu);
-					System.out.println("MASUK SINI");
 					if (userState.equals("InviteOtherPeopleState")) {
 						if (input > 0) {
 							String inviteParticipantFormat = "invite" + MyNetworkLink.DELIMITER + Util.currentMeetingID
@@ -255,18 +268,20 @@ public class MainSystem {
 						if(!inputMenu.equals("exit")) {
 							MyNetworkLink.publicMessage = inputMenu;
 							myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), 
-									inputMenu, String.valueOf(MyTimer.time/20000)));
+									inputMenu, MyTimer.time/20000));
 							myNetworkLink.sendRequestToParticipant();
 						}
 					}
 					else if(userState.equals("PrivateChatState")) {
 						if(!inputMenu.equals("exit")) {
-							System.out.println(inputMenu);
+							if(Util.destinationPrivateMessageAddress-1 == currentUser.getCurrentNetworkAddress()) {
+								System.out.println("You cant message yourself!");	
+							}
 							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
 									MyNetworkLink.DELIMITER + currentUser.getUsername();
 							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
 									inputMenu,
-									String.valueOf(MyTimer.time/20000)));
+									MyTimer.time/20000));
 							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
 									privateChatFormat);
 						}

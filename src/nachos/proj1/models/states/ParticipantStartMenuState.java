@@ -1,13 +1,29 @@
 package nachos.proj1.models.states;
 
+import java.util.Vector;
+
+import nachos.proj1.MyTimer;
 import nachos.proj1.interfaces.IState;
+import nachos.proj1.models.Meeting;
 import nachos.proj1.models.User;
 import nachos.proj1.utils.Util;
+import nachos.proj1.utils.Validator;
 
 public class ParticipantStartMenuState implements IState {
-
+	private String raiseHandMenu = "";
+	private String recordMeetingMenu = "";
+	private Meeting currentMeeting = new Meeting();
 	public ParticipantStartMenuState() {
 		
+	}
+	
+	private void initialize() {
+		if(Util.isRaisedHand) raiseHandMenu = "Lower ";
+		else raiseHandMenu = "Raise ";
+		raiseHandMenu += "Hand";
+		if(Util.isRecording) recordMeetingMenu = "Stop ";
+		else recordMeetingMenu = "Start ";
+		recordMeetingMenu += "Record Meeting";
 	}
 
 	@Override
@@ -19,13 +35,10 @@ public class ParticipantStartMenuState implements IState {
 
 	@Override
 	public void printStateMenu(User user) {
-		String raiseHandMenu = "";
-		if(Util.isRaisedHand) raiseHandMenu = "Lower ";
-		else raiseHandMenu = "Raise ";
-		raiseHandMenu += "Hand";
+		initialize();
 		System.out.println("1. Invite Other People");
 		System.out.println("2. "+raiseHandMenu);
-		System.out.println("3. Record");
+		System.out.println("3. "+recordMeetingMenu);
 		System.out.println("4. Chat");
 		System.out.println("5. Exit");
 		System.out.print(">> ");
@@ -41,7 +54,16 @@ public class ParticipantStartMenuState implements IState {
 			Util.isRaisedHand = !Util.isRaisedHand;
 			break;
 		case 3:
-			
+			currentMeeting = Validator.isValidMeetingIdentifier(Util.currentMeetingID);
+			Util.isRecording = !Util.isRecording;
+			if(!currentMeeting.isRecording()) Util.isRecording = false;
+			if(Util.isRecording && currentMeeting.isRecording()) {
+				Util.startRecordingTimes.add(MyTimer.time/20000);
+			}
+			else if(!Util.isRecording) {
+				if(Util.startRecordingTimes.size() > Util.endRecordingTimes.size())
+					Util.endRecordingTimes.add(MyTimer.time/20000);
+			}
 			break;
 		case 4:
 			changeState(user, input);

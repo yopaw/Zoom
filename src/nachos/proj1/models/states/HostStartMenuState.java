@@ -1,14 +1,20 @@
 package nachos.proj1.models.states;
 
+import nachos.proj1.MyFileSystem;
 import nachos.proj1.interfaces.IState;
+import nachos.proj1.models.Meeting;
 import nachos.proj1.models.User;
 import nachos.proj1.utils.Util;
+import nachos.proj1.utils.Validator;
 
 public class HostStartMenuState implements IState {
 
 	private String recordMeetingMenu;
 	private String privateMessageMenu;
 	private String raiseHandMenu;
+	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
+	private Meeting currentMeeting = new Meeting();
+	private String saveMeetingFormat;
 	
 	public HostStartMenuState() {
 	}
@@ -21,9 +27,26 @@ public class HostStartMenuState implements IState {
 			break;
 		case 2:
 			Util.isRecording = !Util.isRecording;
+			System.out.println(Util.isRecording);
+			currentMeeting = Validator.isValidMeetingIdentifier(Util.currentMeetingID);
+			saveMeetingFormat = currentMeeting.getMeetingLink() + MyFileSystem.DELIMITER + 
+					currentMeeting.getPassword() + MyFileSystem.DELIMITER + currentMeeting.getHostUsername() +
+					MyFileSystem.DELIMITER + currentMeeting.getIsPrivate() + MyFileSystem.DELIMITER +
+					currentMeeting.getHostAddress() + MyFileSystem.DELIMITER +
+					currentMeeting.isPrivateMessage() + MyFileSystem.DELIMITER +
+					Util.isRecording;
+			myFileSystem.overwriteFile(currentMeeting.getMeetingID()+MyFileSystem.FILE_EXTENSION, saveMeetingFormat);
 			break;
 		case 3:
 			Util.isPrivateMessage = !Util.isPrivateMessage;
+			currentMeeting = Validator.isValidMeetingIdentifier(Util.currentMeetingID);
+			saveMeetingFormat = currentMeeting.getMeetingLink() + MyFileSystem.DELIMITER + 
+					currentMeeting.getPassword() + MyFileSystem.DELIMITER + currentMeeting.getHostUsername() +
+					MyFileSystem.DELIMITER + currentMeeting.getIsPrivate() + MyFileSystem.DELIMITER +
+					currentMeeting.getHostAddress() + MyFileSystem.DELIMITER +
+					Util.isPrivateMessage + MyFileSystem.DELIMITER +
+					currentMeeting.isRecording();
+			myFileSystem.overwriteFile(currentMeeting.getMeetingID()+MyFileSystem.FILE_EXTENSION, saveMeetingFormat);
 			break;
 		case 4:
 			Util.isRaisedHand = !Util.isRaisedHand;

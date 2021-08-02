@@ -44,6 +44,13 @@ public class MyFileSystem {
 		}
 		return string.trim();
 	}
+	
+	public void overwriteFile(final String FILENAME, final String CONTENT) {
+		OpenFile of = fs.open(FILENAME, true);
+		byte[] data = CONTENT.getBytes();
+		of.write(data, 0, data.length);
+		of.close();
+	}
 
 	public void writeFile(final String FILENAME, final String CONTENT) {
 		OpenFile of = fs.open(FILENAME, false);

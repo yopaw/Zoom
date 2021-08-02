@@ -4,9 +4,9 @@ public class Record {
 
 	private String username;
 	private String content;
-	private String time;
+	private int time;
 	
-	public Record(String username, String content, String time) {
+	public Record(String username, String content, int time) {
 		super();
 		this.username = username;
 		this.content = content;
@@ -37,13 +37,13 @@ public class Record {
 
 
 
-	public String getTime() {
+	public int getTime() {
 		return time;
 	}
 
 
 
-	public void setTime(String time) {
+	public void setTime(int time) {
 		this.time = time;
 	}
 

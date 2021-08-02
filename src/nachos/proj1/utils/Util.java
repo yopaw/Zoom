@@ -2,6 +2,8 @@ package nachos.proj1.utils;
 
 import java.util.Vector;
 
+import nachos.proj1.MyFileSystem;
+import nachos.proj1.MyNetworkLink;
 import nachos.proj1.models.Record;
 import nachos.proj1.models.Request;
 import nachos.proj1.models.User;
@@ -14,6 +16,51 @@ public class Util {
 	public static boolean isRecording = false;
 	public static boolean isPrivateMessage = false;
 	public static int destinationPrivateMessageAddress = 0;
+	public static Vector<Integer> startRecordingTimes = new Vector<>();
+	public static Vector<Integer> endRecordingTimes = new Vector<>();
+	private MyNetworkLink myNetworkLink = MyNetworkLink.getInstance();
+	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
+	public static Vector<Record> currentRecording = new Vector<>();
+	public static String currentUsername;
+	
+	public void addCurrentRecording() {
+		int index = 0;
+		currentRecording.clear();
+		for(int i = 0; i < myNetworkLink.getRecords().size() ; i++) {
+			int startTime = 0;
+			int endTime = 0;
+			Record currentRecord = myNetworkLink.getRecords().get(i);
+			int recordTime = currentRecord.getTime();
+			
+			if(index < startRecordingTimes.size()) 
+				startTime = startRecordingTimes.get(index);
+			if(index < endRecordingTimes.size())
+				endTime = endRecordingTimes.get(index);
+			
+			if(endTime != 0) {
+				if(recordTime >= startTime && recordTime <= endTime) {
+					currentRecording.add(new Record(currentRecord.getUsername(), 
+							currentRecord.getContent(), currentRecord.getTime()));
+				}
+			}
+			else {
+				if(recordTime >= startTime) {
+					currentRecording.add(new Record(currentRecord.getUsername(), 
+							currentRecord.getContent(), currentRecord.getTime()));
+				}
+			}
+		}
+		
+		for (Record record : currentRecording) {
+			String recordFormat = record.getUsername() + MyFileSystem.DELIMITER +
+				record.getContent() + MyFileSystem.DELIMITER +
+				record.getTime();
+			myFileSystem.appendFile(currentUsername+"record"+currentMeetingID, recordFormat);
+		}
+	}
+	
+	
+	
 	public Util() {
 		
 	}
