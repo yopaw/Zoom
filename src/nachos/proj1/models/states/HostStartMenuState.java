@@ -1,5 +1,6 @@
 package nachos.proj1.models.states;
 
+import nachos.proj1.MyConsole;
 import nachos.proj1.MyFileSystem;
 import nachos.proj1.interfaces.IState;
 import nachos.proj1.models.Meeting;
@@ -15,6 +16,7 @@ public class HostStartMenuState implements IState {
 	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
 	private Meeting currentMeeting = new Meeting();
 	private String saveMeetingFormat;
+	private MyConsole console = MyConsole.getInstance();
 	
 	public HostStartMenuState() {
 	}
@@ -92,7 +94,13 @@ public class HostStartMenuState implements IState {
 
 	@Override
 	public void changeState(User user, int input) {
-		if(input == 1) user.setState(new InviteOtherPeopleState());
+		if(input == 1) {
+			if(myFileSystem.getOnlineUsersDataNotInMeeting().isEmpty()) {
+				System.out.println("There is no user that online outside this meeting");
+				console.scan();
+			}
+			else user.setState(new InviteOtherPeopleState());
+		}
 		else if(input == 5) user.setState(new ChatState());
 		else if(input == 6) user.setState(new ExitMeetingState());
 	}

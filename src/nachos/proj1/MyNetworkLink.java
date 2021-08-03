@@ -221,23 +221,21 @@ public class MyNetworkLink {
 				}
 				else if(userState.equals("HostStartMenuState") && isHostRaisedHand) {
 					String string;
-					String sendContent = currentUser.getUsername();
+					
 					if(Util.isRaisedHand) {
 						string = "raise";
-						sendContent += " raised hand";
 					}
 					else {
 						string = "lower";
-						sendContent += " lowered hand";
 					}
-					records.add(new Record(currentUser.getUsername(), sendContent, MyTimer.time/20000));
 					
 					for(int i = 0; i < listParticipant.size(); i++) {
-						String sendFormat = string + DELIMITER + sendContent+ 
+						String sendFormat = string + DELIMITER + ""+ 
 								DELIMITER + currentUser.getUsername();
 						send(listParticipant.get(i).getCurrentNetworkAddress(), sendFormat);
 					}
 					isHostRaisedHand = false;
+					
 				}
 				else if(purpose.equals("join") || purpose.equals("leave")) {
 					for(int i = 0; i < listParticipant.size(); i++) {
@@ -254,9 +252,11 @@ public class MyNetworkLink {
 					}
 				}
 				else if(purpose.equals("raise")) {
+					System.out.println("MASUK raise");
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "raise" + DELIMITER +  
 								recordContent + DELIMITER + participantUsername;
+						System.out.println(string);
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}

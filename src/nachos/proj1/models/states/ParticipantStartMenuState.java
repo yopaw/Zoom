@@ -1,6 +1,7 @@
 package nachos.proj1.models.states;
 
 
+import nachos.proj1.MyFileSystem;
 import nachos.proj1.MyTimer;
 import nachos.proj1.interfaces.IState;
 import nachos.proj1.models.Meeting;
@@ -12,6 +13,7 @@ public class ParticipantStartMenuState implements IState {
 	private String raiseHandMenu = "";
 	private String recordMeetingMenu = "";
 	private Meeting currentMeeting = new Meeting();
+	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
 	public ParticipantStartMenuState() {
 		
 	}

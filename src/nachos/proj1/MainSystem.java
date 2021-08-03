@@ -9,6 +9,7 @@ import nachos.proj1.models.states.HostStartMenuState;
 import nachos.proj1.models.states.ParticipantStartMenuState;
 import nachos.proj1.utils.Util;
 import nachos.proj1.utils.Validator;
+import nachos.threads.KThread;
 
 public class MainSystem {
 
@@ -100,17 +101,23 @@ public class MainSystem {
 
 	private void viewMeetingRecording() {
 		Vector<String> meetingID = myFileSystem.getMeetingsIDUserData(currentUser.getUsername());
-		Util.printDynamicList(meetingID);
-		int input = 0;
-		do {
-			console.print(">> ");
-			input = console.scanInt();
-		} while (input < 1 || input > meetingID.size());
-		Vector<Record> records = myFileSystem.getMeetingRecordData(meetingID.get(input-1), currentUser.getUsername());
-		util.playRecord(records, meetingID.get(input-1));
-		console.println("");
-		console.print("Press Enter to Continue...");
-		console.scan();
+		if(meetingID.get(0).isEmpty()) {
+			console.println("There is no recording available");
+			console.scan();
+		}
+		else {
+			Util.printDynamicList(meetingID);
+			int input = 0;
+			do {
+				console.print(">> ");
+				input = console.scanInt();
+			} while (input < 1 || input > meetingID.size());
+			Vector<Record> records = myFileSystem.getMeetingRecordData(meetingID.get(input-1), currentUser.getUsername());
+			util.playRecord(records, meetingID.get(input-1));
+			console.println("");
+			console.print("Press Enter to Continue...");
+			console.scan();
+		}
 	}
 
 	private void viewMeetingRequest() {
@@ -162,10 +169,10 @@ public class MainSystem {
 		MyTimer.time = 0;
 		Util.currentMeetingID = currentMeeting.getMeetingID();
 		Util.currentMeetingLink = "https://www." + Util.currentMeetingID + ".com";
-
+		myNetworkLink.initialize();
 		currentUser.setState(new ParticipantStartMenuState());
 
-		myNetworkLink.initialize();
+		
 
 		String joinMeetingFormat = "join" + MyNetworkLink.DELIMITER + myNetworkLink.getNetworkAddress()
 				+ MyNetworkLink.DELIMITER + currentUser.getUsername() + MyNetworkLink.DELIMITER
@@ -174,7 +181,6 @@ public class MainSystem {
 		String participantMeetingFormat = currentUser.getUsername() + MyFileSystem.DELIMITER
 				+ currentUser.getCurrentNetworkAddress();
 
-		System.out.println(currentMeeting.getMeetingID());
 		myFileSystem.appendFile("participant" + currentMeeting.getMeetingID() + MyFileSystem.FILE_EXTENSION,
 				participantMeetingFormat);
 
@@ -216,6 +222,7 @@ public class MainSystem {
 							raiseHandFormat = "lower";
 						raiseHandFormat += MyNetworkLink.DELIMITER + "raise" + MyNetworkLink.DELIMITER
 								+ currentUser.getUsername();
+						System.out.println(raiseHandFormat);
 						myNetworkLink.send(currentMeeting.getHostAddress(), raiseHandFormat);
 					}
 				}
@@ -350,6 +357,14 @@ public class MainSystem {
 					else if (userState.equals("HostStartMenuState")) {
 						if (input == 4) {
 							MyNetworkLink.isHostRaisedHand = true;
+							String sendContent = currentUser.getUsername();
+							if(!Util.isRaisedHand) {
+								sendContent += " raised hand";
+							}
+							else {
+								sendContent += " lowered hand";
+							}
+							myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), sendContent, MyTimer.time/20000));
 							myNetworkLink.sendRequestToParticipant();
 						}
 					}
@@ -357,7 +372,7 @@ public class MainSystem {
 				}
 				else {
 					if (userState.equals("PublicChatState")) {
-						if(!inputMenu.equals("exit")) {
+						if(!inputMenu.equals("exit") && !currentUser.getState().getClass().getSimpleName().equals("ExitMeetingState")) {
 							MyNetworkLink.publicMessage = inputMenu;
 							myNetworkLink.getRecords().add(new Record(currentUser.getUsername(), 
 									inputMenu, MyTimer.time/20000));
@@ -392,6 +407,7 @@ public class MainSystem {
 			}
 		}
 		util.addCurrentRecording();
+		Util.clearScreen(30);
 		util.initialize();
 	}
 	private void printLogo() {
@@ -440,7 +456,6 @@ public class MainSystem {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
