@@ -147,6 +147,24 @@ public class MyFileSystem {
 		return records;
 	}
 	
+	public void overwriteParticipantUsersData(final String USERNAME) {
+		loadParticipantMeetingData();
+		for (User user : getListParticipantMeeting()) {
+			if(user.getUsername().equals(USERNAME)) {
+				listParticipantMeeting.remove(user);
+				break;
+			}
+		}
+		String overwriteContent = "";
+		for (User user : listParticipantMeeting) {
+			String participantFormat = "";
+			if(!user.equals(listParticipantMeeting.lastElement())) participantFormat = user.getUsername() + MyFileSystem.DELIMITER + user.getCurrentNetworkAddress()+"\n";
+			else participantFormat = user.getUsername() + MyFileSystem.DELIMITER + user.getCurrentNetworkAddress();
+			overwriteContent += participantFormat;
+		}
+		overwriteFile("participant"+Util.currentMeetingID+FILE_EXTENSION, overwriteContent);
+	}
+	
 	public void overwriteOnlineUsersData(final String USERNAME) {
 		loadOnlineUsersData();
 		for (User user : listOnlineUsers) {

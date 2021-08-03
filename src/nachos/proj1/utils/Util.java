@@ -23,6 +23,18 @@ public class Util {
 	public static Vector<Record> currentRecording = new Vector<>();
 	public static String currentUsername;
 	private static Util instance = null;
+	public static boolean canRecord = false;
+	
+	public void initialize() {
+		currentMeetingID = "";
+		currentMeetingLink = "";
+		isRaisedHand = false;
+		isRecording = false;
+		isPrivateMessage = false;
+		destinationPrivateMessageAddress = 0;
+		startRecordingTimes.clear();
+		endRecordingTimes.clear();
+	}
 	
 	public void addCurrentRecording() {
 		int index = 0;

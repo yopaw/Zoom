@@ -143,7 +143,7 @@ public class MainSystem {
 					input = console.scan();
 					currentMeeting = Validator.isValidMeetingIdentifier(input);
 				} while (currentMeeting == null);
-				if (!input.startsWith("https:")) {
+				if (!input.startsWith("https:") && !currentMeeting.getPassword().isEmpty()) {
 					console.print("Please input password for the Meeting: ");
 					meetingPassword = console.scan();
 					if (!Validator.isPasswordValid(input, meetingPassword))
@@ -221,13 +221,21 @@ public class MainSystem {
 					}
 				} else if (userState.equals("PrivateChatState")) {
 					if (!inputMenu.equals("exit")) {
-						String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu
-								+ MyNetworkLink.DELIMITER + currentUser.getUsername();
-						myNetworkLink.getRecords().add(
-								new Record(currentUser.getUsername() + " (private)", inputMenu, MyTimer.time / 20000));
-						myNetworkLink.send(MyFileSystem.getListParticipantMeeting()
-								.get(Util.destinationPrivateMessageAddress - 1).getCurrentNetworkAddress(),
-								privateChatFormat);
+						if(MyFileSystem.getListParticipantMeeting().
+								get(Util.destinationPrivateMessageAddress-1).
+								getCurrentNetworkAddress() == currentUser.getCurrentNetworkAddress()) {
+							System.out.println();
+							System.out.println("You cannot chat to your own self");
+						}
+						else {
+							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu
+									+ MyNetworkLink.DELIMITER + currentUser.getUsername();
+							myNetworkLink.getRecords().add(
+									new Record(currentUser.getUsername() + " (private)", inputMenu, MyTimer.time / 20000));
+							myNetworkLink.send(MyFileSystem.getListParticipantMeeting()
+									.get(Util.destinationPrivateMessageAddress - 1).getCurrentNetworkAddress(),
+									privateChatFormat);
+						}
 					}
 				}
 				currentUser.getState().getInputFromUser(currentUser, inputMenu);
@@ -244,6 +252,7 @@ public class MainSystem {
 								+ myNetworkLink.getNetworkAddress() + MyNetworkLink.DELIMITER
 								+ currentUser.getUsername();
 						myNetworkLink.send(currentMeeting.getHostAddress(), leaveMeetingFormat);
+						myFileSystem.overwriteParticipantUsersData(currentUser.getUsername());
 					}
 				}
 				else {
@@ -254,7 +263,8 @@ public class MainSystem {
 				break;
 			}
 		}
-		util.addCurrentRecording();
+		if(Util.canRecord) util.addCurrentRecording();
+		util.initialize();
 	}
 
 	private void createNewMeeting() {
@@ -365,6 +375,7 @@ public class MainSystem {
 			}
 		}
 		util.addCurrentRecording();
+		util.initialize();
 	}
 	private void printLogo() {
 		String logo19_1[] = {

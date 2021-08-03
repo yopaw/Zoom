@@ -60,6 +60,7 @@ public class ParticipantStartMenuState implements IState {
 			if(!currentMeeting.isRecording()) Util.isRecording = false;
 			if(Util.isRecording && currentMeeting.isRecording()) {
 				Util.startRecordingTimes.add(MyTimer.time/20000);
+				Util.canRecord = true;
 			}
 			else if(!Util.isRecording) {
 				if(Util.startRecordingTimes.size() > Util.endRecordingTimes.size())
