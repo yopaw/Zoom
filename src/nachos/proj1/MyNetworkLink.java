@@ -38,6 +38,8 @@ public class MyNetworkLink {
 	public void initialize() {
 		listParticipant.clear();
 		records.clear();
+		
+		publicMessage = "";
 		isHost = false;
 		isParticipant = false;
 		recordContent = "";
@@ -210,7 +212,7 @@ public class MyNetworkLink {
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}
-				else if(userState.equals("PublicChatState")) {
+				else if(userState.equals("PublicChatState") && !purpose.equals("chat")) {
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "chat" + MyNetworkLink.DELIMITER + publicMessage + MyNetworkLink.DELIMITER
 								+ currentUser.getUsername();
@@ -274,7 +276,6 @@ public class MyNetworkLink {
 	public void liveStreaming() {
 		Util.clearScreen(30);
 		Util.printDynamicList(totalParticipant, records, null, currentUser);
-		System.out.println(currentUser.getState().getClass().getSimpleName());
 		currentUser.getState().printStateMenu(currentUser);
 	}
 	
@@ -332,7 +333,6 @@ public class MyNetworkLink {
 	public void setHost(boolean isHost) {
 		this.isHost = isHost;
 	}
-
 
 	public boolean isParticipant() {
 		return isParticipant;

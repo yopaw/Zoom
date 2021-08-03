@@ -5,7 +5,6 @@ import nachos.proj1.MyNetworkLink;
 import nachos.proj1.interfaces.IState;
 import nachos.proj1.models.User;
 import nachos.proj1.utils.Util;
-import nachos.threads.KThread;
 
 public class InviteOtherPeopleState implements IState{
 

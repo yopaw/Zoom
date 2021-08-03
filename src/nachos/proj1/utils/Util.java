@@ -22,6 +22,7 @@ public class Util {
 	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
 	public static Vector<Record> currentRecording = new Vector<>();
 	public static String currentUsername;
+	private static Util instance = null;
 	
 	public void addCurrentRecording() {
 		int index = 0;
@@ -37,32 +38,161 @@ public class Util {
 			if(index < endRecordingTimes.size())
 				endTime = endRecordingTimes.get(index);
 			
-			if(endTime != 0) {
-				if(recordTime >= startTime && recordTime <= endTime) {
-					currentRecording.add(new Record(currentRecord.getUsername(), 
-							currentRecord.getContent(), currentRecord.getTime()));
-				}
+			if(myNetworkLink.isHost()) {
+				currentRecording.add(currentRecord);
 			}
 			else {
-				if(recordTime >= startTime) {
-					currentRecording.add(new Record(currentRecord.getUsername(), 
-							currentRecord.getContent(), currentRecord.getTime()));
+				if(endTime != 0) {
+					if(recordTime >= startTime && recordTime <= endTime) {
+						currentRecording.add(currentRecord);
+					}
+				}
+				else {
+					if(recordTime >= startTime) {
+						currentRecording.add(currentRecord);
+					}
 				}
 			}
 		}
-		
+		myFileSystem.appendFile(currentUsername+"records"+MyFileSystem.FILE_EXTENSION, currentMeetingID);
 		for (Record record : currentRecording) {
 			String recordFormat = record.getUsername() + MyFileSystem.DELIMITER +
 				record.getContent() + MyFileSystem.DELIMITER +
 				record.getTime();
-			myFileSystem.appendFile(currentUsername+"record"+currentMeetingID, recordFormat);
+			myFileSystem.appendFile(currentUsername+"record"+
+				currentMeetingID+MyFileSystem.FILE_EXTENSION, 
+					recordFormat);
+		}
+	}
+	
+	private String changeTimeToString(final int TIME) {
+		if(TIME < 10) return "0"+String.valueOf(TIME);
+		return String.valueOf(TIME);
+	}
+	
+	public void playRecord(Vector<Record> records, String meetingId) {
+		int limit = 25;
+		int max = 0;
+		String viewer = "Recording Meeting: "+meetingId;
+		String informationMeeting;
+		
+		int currentTime = (int) (records.lastElement().getTime());
+		int seconds = (int) (currentTime % 60);
+		int hours = (int) (currentTime / 60);
+		int minutes = hours % 60;
+		
+		hours /= 60;
+		
+		informationMeeting =  changeTimeToString(hours) + ":"
+				+ changeTimeToString(minutes) + ":" + changeTimeToString(seconds);
+	
+		Vector<String> vecDuration = new Vector<>();
+		
+		for (Record record: records) {
+			int secondsDuration = (int) (record.getTime() % 60);
+			int hoursDuration = (int) (record.getTime() / 60);
+			int minutesDuration = hoursDuration % 60;
+			hoursDuration /= 60;
+			String duration = changeTimeToString(hoursDuration)+ ":" + changeTimeToString(minutesDuration)+ ":"
+					+ changeTimeToString(secondsDuration);
+			vecDuration.add(duration);
+			String currentRecords = record.getUsername() + " : " + record.getContent();
+			if (max < currentRecords.length())
+				max = currentRecords.length();
+		}
+		int time = 0;
+		while (true) {
+			time++;
+			int secondsDuration = (int) (time % 60);
+			int hoursDuration = (int) (time / 60);
+			int minutesDuration = hoursDuration % 60;
+			hoursDuration /= 60;
+			String duration = changeTimeToString(hoursDuration)+ ":" + 
+			changeTimeToString(minutesDuration)+ ":"
+					+ changeTimeToString(secondsDuration);
+			clearScreen(30);
+			System.out.println();
+			System.out.println(duration + " / " + informationMeeting);
+			for (int i = 0; i < max + limit; i++) {
+				System.out.print("=");
+			}
+			System.out.println();
+			for (int i = 0; i < max + limit; i++) {
+				if (i == 0 || i == max + limit - 1)
+					System.out.print("|");
+				else if (i == 1)
+					System.out.print(".");
+				else if (i == max + limit - viewer.length())
+					System.out.print(viewer);
+				else if (i < max + limit - viewer.length())
+					System.out.print(" ");
+			}
+			for (int x = 0; x < records.size(); x++) {
+				Record currentRecord = records.get(x);
+				int difference = currentRecord.getTime();
+				
+				if (difference <= time) {
+					if (x == 0) {
+						System.out.println();
+						for (int i = 0; i < max + limit; i++)
+							System.out.print("-");
+						System.out.println();
+					}
+					String recordFormat; 
+					if(x < records.size()-1 ) recordFormat = currentRecord.getUsername()+": "+currentRecord.getContent().trim();
+					else recordFormat = currentRecord.getContent();
+					if (x == 0) {
+						for (int i = 0; i < max + limit; i++) {
+							if (i == 0 || i == max + limit - 1)
+								System.out.print("|");
+							else if (i == 1)
+								System.out.print(".");
+							else if (i == recordFormat.length())
+								System.out.print(recordFormat);
+							else if (i == max + limit - vecDuration.get(x).length() - 1)
+								System.out.print(vecDuration.get(x));
+							else if (i > recordFormat.length() && i < max + limit - vecDuration.get(x).length())
+								System.out.print(" ");
+						}
+					} else {
+						System.out.print("\n");
+						for (int i = 0; i < max + limit; i++) {
+							if (i == 0 || i == max + limit - 1)
+								System.out.print("|");
+							else if (i == 1)
+								System.out.print(".");
+							else if (i == recordFormat.length())
+								System.out.print(recordFormat);
+							else if (i == max + limit - vecDuration.get(x).length() - 1)
+								System.out.print(vecDuration.get(x));
+							else if (i > recordFormat.length() && i < max + limit - vecDuration.get(x).length())
+								System.out.print(" ");
+						}
+					}
+				}
+			}
+			System.out.print("\n");
+			for (int i = 0; i < max + limit; i++) {
+				System.out.print("=");
+			}
+			if (duration.equals(informationMeeting))
+				break;
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	
 	
-	public Util() {
+	private Util() {
 		
+	}
+	
+	public static Util getInstance() {
+		return instance == null ? instance = new Util() : instance;
 	}
 	
 	public static void clearScreen(int row) {
@@ -143,13 +273,77 @@ public class Util {
 		System.out.print("\n");
 	}
 	
+
+	public static void printDynamicList(Vector<String> requests) {
+		int limit = 25;
+		int max = 0;
+		String informationMeeting;
+	
+		for (String request : requests) {
+			String currentRequest = request;
+			if (max < currentRequest.length())
+				max = currentRequest.length();
+		}
+		informationMeeting = " °LIVE";
+	
+		for(int i = 0 ; i < max+limit ; i++) {
+			System.out.print("=");
+		}
+		System.out.println();
+		for(int i = 0 ; i < max+limit ; i++) {
+			if(i == 0 || i == max + limit-1) System.out.print("|");
+			else if(i == 1) System.out.print(".");
+			else if(i == max + limit - informationMeeting.length()) System.out.print(informationMeeting);
+			else if(i < max + limit - informationMeeting.length()) System.out.print(" ");
+		}
+		
+		
+		for (int x = 0; x < requests.size(); x++) {
+			if (x == 0) {
+				System.out.println();
+				for (int i = 0; i < max + limit; i++)
+					System.out.print("-");
+				System.out.println();
+			}
+			String currentRequest = requests.get(x);
+			if (x == 0) {
+				for (int i = 0; i < max + limit; i++) {
+					if (i == 0 || i == max + limit - 1)
+						System.out.print("|");
+					else if (i == 1)
+						System.out.print(".");
+					else if (i == currentRequest.length())
+						System.out.print(currentRequest);
+					else if (i > currentRequest.length())
+						System.out.print(" ");
+				}
+			} else {
+				System.out.print("\n");
+				for (int i = 0; i < max + limit; i++) {
+					if (i == 0 || i == max + limit - 1)
+						System.out.print("|");
+					else if (i == 1)
+						System.out.print(".");
+					else if (i == currentRequest.length())
+						System.out.print(currentRequest);
+					else if (i > currentRequest.length())
+						System.out.print(" ");
+				}
+			}
+		}
+		System.out.print("\n");
+		for(int i = 0 ; i < max+limit ; i++) {
+			System.out.print("=");
+		}
+		System.out.print("\n");
+	}
+	
 	public static void printDynamicList(int totalParticipant, Vector<Record> records, 
 		Vector<User> users, User currentUser) {
 		int limit = 25;
 		int max = 0;
 		String viewer = "Total Participant: "+totalParticipant;
 		String informationMeeting;
-		System.out.println("PRINT DYNAMIC LIST");
 		if(records == null) {
 			int index = 0;
 			for (User currUser : users) {
@@ -250,7 +444,6 @@ public class Util {
 			System.out.print("=");
 		}
 		System.out.print("\n");
-		System.out.println("END DYNAMIC LIST");
 	}
 
 }

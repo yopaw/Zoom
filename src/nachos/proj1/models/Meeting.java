@@ -2,6 +2,9 @@ package nachos.proj1.models;
 
 import java.util.Random;
 
+import nachos.proj1.MyFileSystem;
+import nachos.proj1.utils.Validator;
+
 public class Meeting {
 	
 	private String meetingID = "";
@@ -12,6 +15,7 @@ public class Meeting {
 	private int hostAddress;
 	private boolean isPrivateMessage = false;
 	private boolean isRecording = false;
+	private MyFileSystem myFileSystem = MyFileSystem.getInstance();
 	
 	public Meeting() {
 		
@@ -121,17 +125,17 @@ public class Meeting {
 	
 	public void generateMeetingID(){
 		Random random = new Random();
-		for(int i = 0; i < 6; i++) {
-			int randomChance = random.nextInt(2);
-			if(randomChance == 0) {
-				int randomNumber = random.nextInt(10);
-				meetingID += randomNumber;
-			}
-			else {
-				char randomCharacter = (char) (random.nextInt(26) + 65);
-				System.out.println(randomCharacter);
-				meetingID += randomCharacter;
-			}
-		}
+		do {
+			for (int i = 0; i < 6; i++) {
+				int randomChance = random.nextInt(2);
+				if (randomChance == 0) {
+					int randomNumber = random.nextInt(10);
+					meetingID += randomNumber;
+				} else {
+					char randomCharacter = (char) (random.nextInt(26) + 65);
+					meetingID += randomCharacter;
+				}
+			} 
+		} while (!Validator.isNotContainsById(myFileSystem.getMeetingsIDData(), meetingID));
 	}
 }

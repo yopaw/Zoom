@@ -1,6 +1,10 @@
 package nachos.proj1;
 
+import java.util.Vector;
+
 import nachos.proj1.models.User;
+import nachos.proj1.utils.Util;
+import nachos.proj1.utils.Validator;
 
 public class Login {
 	
@@ -28,10 +32,17 @@ public class Login {
 			if(currUser.length > 1) {
 				String currUsername = currUser[0];
 				String currPassword = currUser[1];
-				System.out.println(currPassword+" "+currUsername);
 				if(currUsername.equals(username) && currPassword.equals(password)) {
+					myFileSystem.loadOnlineUsersData();
 					User user = new User(username, password, myNetworkLink.getNetworkAddress());
+					Vector<User> onlineUsers = myFileSystem.getOnlineUsersData();
+					if(Validator.isNotContainsByName(onlineUsers, user.getUsername()))
 					return user;
+					else {
+						System.out.println("Please logout your account first");
+						console.scan();
+						return null;
+					}
 				}
 			}
 		}

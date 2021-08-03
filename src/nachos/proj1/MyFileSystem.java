@@ -5,6 +5,8 @@ import java.util.Vector;
 import nachos.machine.FileSystem;
 import nachos.machine.Machine;
 import nachos.machine.OpenFile;
+import nachos.proj1.models.Meeting;
+import nachos.proj1.models.Record;
 import nachos.proj1.models.User;
 import nachos.proj1.utils.Util;
 import nachos.proj1.utils.Validator;
@@ -116,6 +118,55 @@ public class MyFileSystem {
 				listOnlineUsers.add(new User(username, userNetworkAddress));
 			}
 		}
+	}
+	
+	public Vector<Record> getMeetingRecordData(final String MEETING_ID, final String USERNAME) {
+		Vector<Record> records = new Vector<>();
+		String listRecords = readFile(USERNAME+"record"+MEETING_ID+FILE_EXTENSION);
+		String[] recordDatas = listRecords.split("\n");
+		for (String string : recordDatas) {
+			String[] currentRecord = string.split("#");
+			records.add(new Record(currentRecord[0],currentRecord[1],Integer.parseInt(currentRecord[2])));
+		}
+		return records;
+	}
+	
+	public void overwriteOnlineUsersData(final String USERNAME) {
+		loadOnlineUsersData();
+		for (User user : listOnlineUsers) {
+			if(user.getUsername().equals(USERNAME)) {
+				listOnlineUsers.remove(user);
+				break;
+			}
+		}
+		String overwriteContent = "";
+		for (User user : listOnlineUsers) {
+			String onlineUserFormat = "";
+			if(!user.equals(listOnlineUsers.lastElement())) onlineUserFormat = user.getUsername() + MyFileSystem.DELIMITER + user.getCurrentNetworkAddress()+"\n";
+			else onlineUserFormat = user.getUsername() + MyFileSystem.DELIMITER + user.getCurrentNetworkAddress();
+			overwriteContent += onlineUserFormat;
+		}
+		overwriteFile(ONLINE_USERS_FILE_NAME, overwriteContent);
+	}
+	
+	public Vector<String> getMeetingsIDData(){
+		Vector<String> meetings = new Vector<>();
+		String fileContent = readFile(MyFileSystem.MEETING_FILE_NAME);
+		String[] listOfMeeting = fileContent.split(MyFileSystem.MULTIPLE_DELIMITER);
+		for (String string : listOfMeeting) {
+			meetings.add(string);
+		}
+		return meetings;
+	}
+	
+	public Vector<String> getMeetingsIDUserData(final String USERNAME){
+		Vector<String> meetings = new Vector<>();
+		String fileContent = readFile(USERNAME+"records"+FILE_EXTENSION);
+		String[] listOfMeeting = fileContent.split(MyFileSystem.MULTIPLE_DELIMITER);
+		for (String string : listOfMeeting) {
+			meetings.add(string);
+		}
+		return meetings;
 	}
 	
 	public Vector<User> getOnlineUsersData(){

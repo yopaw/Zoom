@@ -22,6 +22,15 @@ public class Validator {
 		return true;
 	}
 	
+	public static boolean isNotContainsById(final Vector<String> meetingsID, final String ID) {
+		for (String string : meetingsID) {
+			if(ID.equals(string)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static Meeting isValidMeetingIdentifier(final String MEETING_IDENTIFIER) {
 		String fileContent = myFileSystem.readFile(MyFileSystem.MEETING_FILE_NAME);
 		String[] listOfMeeting = fileContent.split(MyFileSystem.MULTIPLE_DELIMITER);

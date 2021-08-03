@@ -1,6 +1,5 @@
 package nachos.proj1.models.states;
 
-import java.util.Vector;
 
 import nachos.proj1.MyTimer;
 import nachos.proj1.interfaces.IState;
@@ -36,6 +35,8 @@ public class ParticipantStartMenuState implements IState {
 	@Override
 	public void printStateMenu(User user) {
 		initialize();
+		System.out.println("Participant Menu");
+		System.out.println("=====================");
 		System.out.println("1. Invite Other People");
 		System.out.println("2. "+raiseHandMenu);
 		System.out.println("3. "+recordMeetingMenu);

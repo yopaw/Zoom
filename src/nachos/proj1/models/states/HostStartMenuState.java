@@ -67,6 +67,8 @@ public class HostStartMenuState implements IState {
 	@Override
 	public void printStateMenu(User user) {
 		initialize();
+		System.out.println("Host Menu");
+		System.out.println("=======================");
 		System.out.println("1. Invite Other People");
 		System.out.println("2. "+recordMeetingMenu);
 		System.out.println("3. "+privateMessageMenu);
