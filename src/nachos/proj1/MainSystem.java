@@ -43,7 +43,7 @@ public class MainSystem {
 				break;
 			case 2:
 				currentUser = Login.doLogin();
-				mainMenu();
+				if(currentUser != null) mainMenu();
 				break;
 			case 3:
 				printLogo();

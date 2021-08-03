@@ -239,7 +239,7 @@ public class Util {
 					System.out.print("-");
 				System.out.println();
 			}
-			String currentRequest = requests.get(x).getMeetingLinks() + " : " + 
+			String currentRequest = " "+(x+1)+". "+requests.get(x).getMeetingLinks() + " : " + 
 			requests.get(x).getSenderUsername();
 			if (x == 0) {
 				for (int i = 0; i < max + limit; i++) {
@@ -305,7 +305,7 @@ public class Util {
 					System.out.print("-");
 				System.out.println();
 			}
-			String currentRequest = requests.get(x);
+			String currentRequest = " "+(x+1)+". "+requests.get(x);
 			if (x == 0) {
 				for (int i = 0; i < max + limit; i++) {
 					if (i == 0 || i == max + limit - 1)
@@ -389,7 +389,7 @@ public class Util {
 					for(int i = 0 ; i < max+limit ; i++) System.out.print("-");
 					System.out.println();
 				}
-				String currentUserString= (x+1) + ". "+users.get(x).getUsername();
+				String currentUserString= " "+(x+1) + ". "+users.get(x).getUsername();
 				if(x == 0) {
 					for(int i = 0 ; i < max+limit ; i++) {
 						if(i == 0 || i == max + limit - 1) System.out.print("|");

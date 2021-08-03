@@ -19,11 +19,12 @@ public class Login {
 	
 	public static User doLogin() {
 		String username,password;
-		console.print("Input username: ");
-		username = console.scan();
-		console.print("Input password: ");
-		password = console.scan();
-		
+		do {
+			console.print("Input username: ");
+			username = console.scan();
+			console.print("Input password: ");
+			password = console.scan();
+		} while (!Validator.isValidRegisterFormat(username, password));
 		String output = myFileSystem.readFile(FILENAME);
 		String[] users = output.trim().split("\n");
 		
@@ -46,6 +47,7 @@ public class Login {
 				}
 			}
 		}
+		System.out.println("There are no matching accounts");
 		return null;
 	}
 	
