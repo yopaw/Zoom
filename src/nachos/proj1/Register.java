@@ -25,7 +25,8 @@ public class Register {
 			username = console.scan();
 			console.print("Input password: ");
 			password = console.scan();
-		} while (!Validator.isNotContainsByName(users, username) || Validator.isStringContainsSpace(username));
+		} while (!Validator.isNotContainsByName(users, username) || 
+				!Validator.isValidRegisterFormat(username, password));
 		String saveUserFormat = username + MyFileSystem.DELIMITER + password;
 		
 		myFileSystem.appendFile(MyFileSystem.USER_FILE_NAME, saveUserFormat);

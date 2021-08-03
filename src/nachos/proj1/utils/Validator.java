@@ -19,6 +19,12 @@ public class Validator {
 		return false;
 	}
 	
+	public static boolean isValidRegisterFormat(final String USERNAME, final String PASSWORD) {
+		if(isStringContainsSpace(USERNAME)) return false;
+		else if(USERNAME.isEmpty() || PASSWORD.isEmpty()) return false;
+		return true;
+	}
+	
 	public static boolean isNotContainsByName(final Vector<User> users, final String NAME) {
 		for (User user : users) {
 			if(user.getUsername().equals(NAME)) {
