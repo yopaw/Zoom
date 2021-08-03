@@ -13,6 +13,12 @@ public class Validator {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public static boolean isStringContainsSpace(final String STRING) {
+		if (STRING.contains(" "))
+			return true;
+		return false;
+	}
+	
 	public static boolean isNotContainsByName(final Vector<User> users, final String NAME) {
 		for (User user : users) {
 			if(user.getUsername().equals(NAME)) {

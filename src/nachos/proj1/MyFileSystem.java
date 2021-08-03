@@ -106,6 +106,22 @@ public class MyFileSystem {
 		return listOnlineUsersDataNotInMeeting;
 	}
 	
+	public Vector<User> getAllUsersData(){
+		Vector<User> vecUser = new Vector<>();
+		String users = readFile(ONLINE_USERS_FILE_NAME);
+		String [] usersData = users.split("\n");
+		listOnlineUsers.clear();
+		if(!users.isEmpty()) {
+			for (String string : usersData) {
+				String [] currentUserData = string.split(DELIMITER);
+				String username = currentUserData[0];
+				int userNetworkAddress = Integer.parseInt(currentUserData[1]);
+				vecUser.add(new User(username, userNetworkAddress));
+			}
+		}
+		return vecUser;
+	}
+	
 	public void loadOnlineUsersData(){
 		String onlineUsers = readFile(ONLINE_USERS_FILE_NAME);
 		String [] onlineUsersData = onlineUsers.split("\n");
@@ -168,6 +184,7 @@ public class MyFileSystem {
 		}
 		return meetings;
 	}
+	
 	
 	public Vector<User> getOnlineUsersData(){
 		return listOnlineUsers;
