@@ -1,10 +1,17 @@
 package nachos.proj1.models.states;
 
+import nachos.proj1.MyFileSystem;
+import nachos.proj1.MyNetworkLink;
 import nachos.proj1.interfaces.IState;
+import nachos.proj1.models.Meeting;
 import nachos.proj1.models.User;
+import nachos.proj1.utils.Util;
+import nachos.proj1.utils.Validator;
 
 public class ChatState implements IState {
 
+	private Meeting currentMeeting = new Meeting();
+	private MyNetworkLink myNetworkLink = MyNetworkLink.getInstance();
 	public ChatState() {
 		
 	}
@@ -29,8 +36,17 @@ public class ChatState implements IState {
 
 	@Override
 	public void changeState(User user, int input) {
-		if(input == 1) user.setState(new PrivateChatMenuState());
+		currentMeeting = Validator.isValidMeetingIdentifier(Util.currentMeetingID);
+		if(input == 1) {
+			if(currentMeeting.isPrivateMessage()) {
+				user.setState(new PrivateChatMenuState());
+			}
+		}
 		else if(input == 2) user.setState(new PublicChatState());
+		else if(input == 3) {
+			if(myNetworkLink.isHost()) user.setState(new HostStartMenuState());
+			else if(myNetworkLink.isParticipant()) user.setState(new ParticipantStartMenuState());
+		}
 	}
 
 	@Override

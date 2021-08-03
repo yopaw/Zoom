@@ -77,8 +77,6 @@ public class MyFileSystem {
 		String participantMeeting = readFile("participant"+Util.currentMeetingID+FILE_EXTENSION);
 		String [] participantMeetingData = participantMeeting.split("\n");
 		listParticipantMeeting.clear();
-		System.out.println(Util.currentMeetingID);
-		System.out.println(participantMeetingData.length);
 		for (String string : participantMeetingData) {
 			String [] currentUserData = string.split(DELIMITER);
 			String username = currentUserData[0];

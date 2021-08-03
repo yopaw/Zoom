@@ -108,6 +108,7 @@ public class MainSystem {
 		} while (input < 1 || input > meetingID.size());
 		Vector<Record> records = myFileSystem.getMeetingRecordData(meetingID.get(input-1), currentUser.getUsername());
 		util.playRecord(records, meetingID.get(input-1));
+		console.println("");
 		console.print("Press Enter to Continue...");
 		console.scan();
 	}
@@ -197,7 +198,14 @@ public class MainSystem {
 								.getCurrentNetworkAddress();
 						myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
 					}
-				} else if (userState.equals("PrivateChatMenuState")) {
+				}
+				else if(userState.equals("ChatState")) {
+					if(inputINT == 1) {
+						currentMeeting = Validator.isValidMeetingIdentifier(currentMeeting.getMeetingID());
+						if(!currentMeeting.isPrivateMessage()) continue;
+					}
+				}
+				else if (userState.equals("PrivateChatMenuState")) {
 					Util.destinationPrivateMessageAddress = inputINT;
 				} else if (userState.equals("ParticipantStartMenuState")) {
 					if (inputINT == 2) {
@@ -224,8 +232,8 @@ public class MainSystem {
 						if(MyFileSystem.getListParticipantMeeting().
 								get(Util.destinationPrivateMessageAddress-1).
 								getCurrentNetworkAddress() == currentUser.getCurrentNetworkAddress()) {
-							System.out.println();
 							System.out.println("You cannot chat to your own self");
+							console.scan();
 						}
 						else {
 							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu
@@ -314,7 +322,6 @@ public class MainSystem {
 				participantMeetingFormat);
 		
 		while (true) {
-			console.println(meeting.getMeetingLink());
 			myNetworkLink.liveStreaming();
 			inputMenu = console.scan();
 			String userState = currentUser.getState().getClass().getSimpleName();
@@ -330,7 +337,14 @@ public class MainSystem {
 									.getCurrentNetworkAddress();
 							myNetworkLink.send(destinationNetworkAddress, inviteParticipantFormat);
 						}
-					} else if (userState.equals("PrivateChatMenuState")) {
+					}
+					else if(userState.equals("ChatState")) {
+						if(input == 1) {
+							meeting = Validator.isValidMeetingIdentifier(meeting.getMeetingID());
+							if(!meeting.isPrivateMessage()) continue;
+						}
+					}
+					else if (userState.equals("PrivateChatMenuState")) {
 						Util.destinationPrivateMessageAddress = input;
 					}
 					else if (userState.equals("HostStartMenuState")) {
@@ -353,15 +367,18 @@ public class MainSystem {
 					else if(userState.equals("PrivateChatState")) {
 						if(!inputMenu.equals("exit")) {
 							if(Util.destinationPrivateMessageAddress-1 == currentUser.getCurrentNetworkAddress()) {
-								System.out.println("You cant message yourself!");	
+								System.out.println("You cannot chat to your own self");
+								console.scan();
 							}
-							String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
-									MyNetworkLink.DELIMITER + currentUser.getUsername();
-							myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
-									inputMenu,
-									MyTimer.time/20000));
-							myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
-									privateChatFormat);
+							else {
+								String privateChatFormat = "private" + MyNetworkLink.DELIMITER + inputMenu +
+										MyNetworkLink.DELIMITER + currentUser.getUsername();
+								myNetworkLink.getRecords().add(new Record(currentUser.getUsername() + " (private)",
+										inputMenu,
+										MyTimer.time/20000));
+								myNetworkLink.send(MyFileSystem.getListParticipantMeeting().get(Util.destinationPrivateMessageAddress-1).getCurrentNetworkAddress(), 
+										privateChatFormat);
+							}
 						}
 					}
 					currentUser.getState().getInputFromUser(currentUser, inputMenu);
@@ -436,7 +453,6 @@ public class MainSystem {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
