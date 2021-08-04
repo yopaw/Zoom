@@ -191,8 +191,8 @@ public class MainSystem {
 
 		while (true) {
 			myNetworkLink.liveStreaming();
-			String userState = currentUser.getState().getClass().getSimpleName();
 			inputMenu = console.scan();
+			String userState = currentUser.getState().getClass().getSimpleName();
 			if (Validator.isNumeric(inputMenu)) {
 				int inputINT = Integer.parseInt(inputMenu);
 				if (userState.equals("InviteOtherPeopleState")) {
@@ -222,7 +222,6 @@ public class MainSystem {
 							raiseHandFormat = "lower";
 						raiseHandFormat += MyNetworkLink.DELIMITER + "raise" + MyNetworkLink.DELIMITER
 								+ currentUser.getUsername();
-						System.out.println(raiseHandFormat);
 						myNetworkLink.send(currentMeeting.getHostAddress(), raiseHandFormat);
 					}
 				}
@@ -278,7 +277,7 @@ public class MainSystem {
 				break;
 			}
 		}
-		if(Util.canRecord) util.addCurrentRecording();
+		if(Util.canRecord && myNetworkLink.getRecords().isEmpty()) util.addCurrentRecording();
 		util.initialize();
 	}
 

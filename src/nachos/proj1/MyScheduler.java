@@ -12,7 +12,7 @@ public class MyScheduler extends Scheduler{
 	@Override
 	public ThreadQueue newThreadQueue(boolean transferPriority) {
 		// TODO Auto-generated method stub
-		return null;
+		return new MyThreadQueue();
 	}
 
 }

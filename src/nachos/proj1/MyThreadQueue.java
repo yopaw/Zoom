@@ -21,7 +21,8 @@ public class MyThreadQueue extends ThreadQueue {
 	@Override
 	public KThread nextThread() {
 		// TODO Auto-generated method stub
-		return null;
+		if(queue.isEmpty()) return null;
+		return queue.remove(0);
 	}
 
 	@Override

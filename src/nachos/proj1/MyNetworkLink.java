@@ -252,18 +252,16 @@ public class MyNetworkLink {
 					}
 				}
 				else if(purpose.equals("raise")) {
-					System.out.println("MASUK raise");
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "raise" + DELIMITER +  
-								recordContent + DELIMITER + participantUsername;
-						System.out.println(string);
+								"" + DELIMITER + participantUsername;
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}
 				else if(purpose.equals("lower")) {
 					for(int i = 0; i < listParticipant.size(); i++) {
 						String string = "lower" + DELIMITER +  
-								recordContent + DELIMITER + participantUsername;
+								"" + DELIMITER + participantUsername;
 						send(listParticipant.get(i).getCurrentNetworkAddress(), string);
 					}
 				}
